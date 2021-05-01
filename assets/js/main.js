@@ -153,7 +153,7 @@
 				.appendTo($body)
 				.panel({
 					delay: 500,
-					hideOnClick: true,
+					hideOnClick: false,
 					hideOnSwipe: true,
 					resetScroll: true,
 					resetForms: true,
@@ -255,7 +255,16 @@
 
 			// Copy to clipboard
 			$('.copyToClipboard').click(function () {
-        let str = $(this).attr('address');
+				var popup = document.getElementById("copiedPopUp");
+				popup.classList.add("show");
+				setTimeout(function () {
+			  	popup.classList.add("hide");
+			 	}, 2000);
+				setTimeout(function () {
+					popup.classList.remove("show");
+					popup.classList.remove("hide");
+			 	}, 2500);
+				let str = $(this).attr('address');
         const el = document.createElement('textarea');
         el.value = str;
         el.setAttribute('readonly', '');
@@ -265,13 +274,12 @@
         el.select();
         document.execCommand('copy');
         document.body.removeChild(el);
+
     })
 
 
 		// Pop up appear and dissapear
 		$('.popUpandDisapear').click(function() {
-			var popup = document.getElementById("copiedPopUp");
-  		popup.classList.toggle("show");
 		 	//setTimeout(function () {
 		  //	$(this).popup('close');
 		 	//}, 5000);
