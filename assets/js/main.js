@@ -267,6 +267,16 @@
         document.body.removeChild(el);
     })
 
+
+		// Pop up appear and dissapear
+		$('.popUpandDisapear').click(function() {
+			var popup = document.getElementById("copiedPopUp");
+  		popup.classList.toggle("show");
+		 	//setTimeout(function () {
+		  //	$(this).popup('close');
+		 	//}, 5000);
+		});
+
 		}
 
 })(jQuery);
