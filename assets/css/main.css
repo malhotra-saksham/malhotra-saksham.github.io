@@ -2694,8 +2694,8 @@ input, select, textarea {
   visibility: hidden;
   width: 180px;
 	height: 75px;
-	background-color: #fff;
-  color: #000;
+	background-color: #ffffff;
+  color: #1e252d;
   text-align: center;
   border-radius: 6px;
   padding: 8px 0;
@@ -2705,6 +2705,7 @@ input, select, textarea {
   left: 50%;
   margin-left: -80px;
 	font-family: "Source Sans Pro", Helvetica, sans-serif;
+	font-size: 0.8rem;
 	text-transform: uppercase;
 }
 
