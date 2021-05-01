@@ -2692,20 +2692,23 @@ input, select, textarea {
 /* The actual popup */
 .popup .popuptext {
   visibility: hidden;
-  width: 160px;
-  background-color: #555;
-  color: #fff;
+  width: 180px;
+	height: 75px;
+	background-color: #fff;
+  color: #000;
   text-align: center;
   border-radius: 6px;
   padding: 8px 0;
   position: absolute;
   z-index: 1;
-  bottom: 125%;
+  bottom: -7.5%;
   left: 50%;
   margin-left: -80px;
+	font-family: "Source Sans Pro", Helvetica, sans-serif;
+	text-transform: uppercase;
 }
 
-/* Popup arrow */
+/* Popup arrow
 .popup .popuptext::after {
   content: "";
   position: absolute;
@@ -2715,13 +2718,19 @@ input, select, textarea {
   border-width: 5px;
   border-style: solid;
   border-color: #555 transparent transparent transparent;
-}
+} */
 
 /* Toggle this class - hide and show the popup */
 .popup .show {
   visibility: visible;
-  -webkit-animation: fadeIn 1s;
-  animation: fadeIn 1s;
+  -webkit-animation: fadeIn 0.75s;
+  animation: fadeIn 0.75s;
+}
+
+.popup .hide {
+	visibility: visible;
+	-webkit-animation: fadeOut 0.75s;
+	animation: fadeOut 0.75s;
 }
 
 /* Add animation (fade in the popup) */
@@ -2732,7 +2741,18 @@ input, select, textarea {
 
 @keyframes fadeIn {
   from {opacity: 0;}
-  to {opacity:1 ;}
+  to {opacity: 1;}
+}
+
+/* Add animation (fade out the popup) */
+@-webkit-keyframes fadeOut {
+  from {opacity: 1;}
+  to {opacity: 0;}
+}
+
+@keyframes fadeOut {
+  from {opacity: 1;}
+  to {opacity: 0;}
 }
 
 /* Actions */
