@@ -2599,9 +2599,12 @@ input, select, textarea {
 		}
 
 		.image.left, .image.right {
-			max-width: 40%;
+			max-width: 35%;
 		}
 
+		.image.left.small, .image.right.small {
+			max-width: 8%;
+		}
 			.image.left img, .image.right img {
 				width: 100%;
 			}
@@ -2609,7 +2612,7 @@ input, select, textarea {
 		.image.left {
 			float: left;
 			margin: 0 2rem 2rem 0;
-			top: 0.75rem;
+			top: 0;
 		}
 
 		.image.right {
