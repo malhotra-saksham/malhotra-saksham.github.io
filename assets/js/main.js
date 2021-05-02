@@ -277,14 +277,6 @@
 
     })
 
-
-		// Pop up appear and dissapear
-		$('.popUpandDisapear').click(function() {
-		 	//setTimeout(function () {
-		  //	$(this).popup('close');
-		 	//}, 5000);
-		});
-
 		}
 
 })(jQuery);
