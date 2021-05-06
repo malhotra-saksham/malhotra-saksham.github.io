@@ -87,7 +87,8 @@
 				if (browser.name == 'ie'			// IE
 				||	browser.name == 'edge'			// Edge
 				||	window.devicePixelRatio > 1		// Retina/HiDPI (= poor performance)
-				||	browser.mobile)					// Mobile devices
+				||	browser.mobile					// Mobile devices
+				||  window.location.href.indexOf("#nav") != -1) // for fixing bug causing glitching during load to nav bar on a new page load
 					off();
 
 			// Enable everywhere else.
