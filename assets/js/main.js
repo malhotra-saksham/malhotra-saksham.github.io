@@ -87,7 +87,8 @@
 				if (browser.name == 'ie'			// IE
 				||	browser.name == 'edge'			// Edge
 				||	window.devicePixelRatio > 1		// Retina/HiDPI (= poor performance)
-				||	browser.mobile)					// Mobile devices
+				||	browser.mobile					// Mobile devices
+				||  window.location.href.indexOf("#nav") != -1)
 					off();
 
 			// Enable everywhere else.
