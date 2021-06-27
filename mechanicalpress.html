@@ -1,0 +1,679 @@
+	<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Saksham Malhotra</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<style type="text/css">
+			span.codekeyword { color:#0000FF }
+			span.codecomment { color:#228B22 }
+			span.codestring { color:#A020F0 }
+			span.codeuntermstring { color:#B20000 }
+			span.codesyscmd { color:#B28C00 }
+			pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Intro -->
+					<div id="intro">
+						<h1>Hi, I'm <br />
+						Saksham Malhotra</h1>
+						<p>This is a collection of some of my projects and designs.</p>
+						<ul class="actions">
+							<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
+						</ul>
+					</div>
+
+				<!-- Header -->
+					<header id="header">
+						<a href="index.html" class="logo">Saksham Malhotra</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="index.html#header">Projects</a></li>
+							<li><a href="aboutme.html#header">About Me</a></li>
+						</ul>
+						<ul class="icons popup">
+							<span class="popuptext" id="copiedPopUp">Copied to Clipboard!</span>
+							<li><a href="#!" title="Phone Number" address="6473093852" class="icon solid fa-phone-alt copyToClipboard"><span class="label">Phone</span></a></li>
+							<li><a href="#!" title="Email" address="saksham.malhotra98@gmail.com" class="icon solid fa-envelope copyToClipboard"><span class="label">Email</span></a></li>
+							<li><a href="https://www.linkedin.com/in/saksham98/" title="LinkedIn" target="_blank" class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+							<li><a href="https://malhotra-saksham.github.io/documents/SakshamMalhotraCV.pdf" title="Resume" target="_blank" class="icon solid fa-id-badge"><span class="label">Resume</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Post -->
+							<section class="post">
+								<header class="major">
+									<h1>Mechanical Press</h1>
+									<p>A mechanical press designed in SolidWorks with fundamental torque and power calculations modelled in MATLAB.</p>
+								</header>
+								<div class="image fit"><img src="images/pic06.jpg" alt="" /></div>
+
+								<h3>Background & Build</h3>
+								<p>The goal of this project was to use an iterative design approach to model a mechanical press using helix gear sets to meet provided punching force requirements. A key aspect of the project that I was responsible for was setting up the MATLAB model of the press. My MATLAB scripts were used to efficiently iterate on aspects of the design such as gear and bearing selection based on safety factor considerations. The bearing selector tool that I programmed was modelled based on Shigley's bearing catalogue but was also used with the SKS bearing catalogue under the assumption that the code bearing equations for Shigley's catalogue applied to the SKS catalogue.</p>
+								<h3>MATLAB code: Main Script</h3>
+								<pre><code>close <span class="codestring">all</span>
+clear <span class="codestring">all</span>
+clc
+
+syms <span class="codestring">alpha</span>
+assume(alpha&gt;=180 &amp; alpha&lt;=360)
+format <span class="codestring">Short</span> <span class="codestring">G</span></code></pre>
+
+								<h4 id="2"><u>Finding Pressing Forces</u></h4>
+								<pre><code>K = 1300;                                   <span class="codecomment">%strength coeff of Steel</span>
+n_metal = 0.18;                             <span class="codecomment">%hardening exponent</span>
+ef = 0.7;                                   <span class="codecomment">%fraction strain in sheer</span>
+thickness = 0.0032;                         <span class="codecomment">%sheet thickness (worst case)</span>
+diameter = 0.05;                            <span class="codecomment">%cutting diameter (worst case)</span>
+
+shear_MPa = K*(ef).^n_metal / sqrt(3);      <span class="codecomment">%shear stress (MPa)</span>
+
+shear_kgf = shear_MPa*101971.62;            <span class="codecomment">%shear stress (kg force)</span>
+
+Fmax_kgf = pi*diameter*thickness*shear_kgf; <span class="codecomment">%maximum pressing force (kfg)</span>
+
+Fmax_Ton = Fmax_kgf * 0.0011;               <span class="codecomment">%maximum pressing force(Tons)</span>
+
+L_p_max = Fmax_kgf * 9.80665/1000;          <span class="codecomment">%max pressing force (kN)</span>
+
+<span class="codecomment">% force funtion approx. as a sine wave</span>
+syms <span class="codestring">x</span>
+f(x) = L_p_max*(sin((x*pi/0.0032)));
+Emax = double(int(f(x),0,0.0032));          <span class="codecomment">%Energy required for pressing (kJ)</span></code></pre>
+
+<h4 id="3"><u>Finding Machine Load, Torque, Velocity and Height</u></h4>
+<pre><code>SF = 2;                                              <span class="codecomment">%Safety Factor</span>
+S = 0.05;                                            <span class="codecomment">%Stroke(25mm - 75mm)</span>
+r = S/2;                                             <span class="codecomment">%crank length</span>
+l = 6*r;                                             <span class="codecomment">%connecting rod length</span>
+n = 30;                                                       <span class="codecomment">%spm = rpm</span>
+beta = acosd((sqrt(l^2-r^2*(sind(alpha)).^2))/l);
+h(alpha) = (r)*(1-cosd(alpha))+(r^2)*(sind(alpha)).^2/(2*l);  <span class="codecomment">%displacement</span>
+
+alpha_rated = solve(h==0.0032,alpha);
+alpha_rated = double(alpha_rated);                <span class="codecomment">%alpha @ 3.2mm above BDC</span>
+alpha_peak_press = 325;                           <span class="codecomment">%alpha @ peak press force</span>
+alpha_rated_TDC = double(180+(360-alpha_rated));  <span class="codecomment">%alpha @ ~3.2mm below TDC</span>
+
+v(alpha) = abs((S*pi*n/60)*sind(alpha));              <span class="codecomment">%Velocity (m/s)</span>
+v_rated = double(v(alpha_rated));                     <span class="codecomment">%Rated velocity</span>
+
+<span class="codecomment">%Torque and Machine Load Calculations</span>
+M_rated = abs(double(L_p_max*SF*S*sind(alpha_peak_press)/2));   <span class="codecomment">%Rated Torque (kN*m)</span>
+
+L_m_curve(alpha) = abs(2*M_rated/(S*sind(alpha)));              <span class="codecomment">%Machine load curve (excluding saturated ends)</span>
+L_m_rated = double(L_m_curve(alpha_rated));                     <span class="codecomment">%Rated Machine load @ alpha_rated: (kN)</span>
+
+<span class="codecomment">%Piecewise function for machine load with saturation bounds</span>
+L_m(alpha) = piecewise(alpha&lt;alpha_rated_TDC, L_m_curve(alpha_rated_TDC), alpha&gt;alpha_rated, L_m_rated, L_m_curve(alpha));
+
+<span class="codecomment">% Plotting press load</span>
+punch_start_height = h(alpha_peak_press) + (thickness/2);
+alpha_punch_start = solve(h==punch_start_height,alpha);
+phase_shift = double(alpha_punch_start);
+period = (alpha_peak_press - phase_shift) * 4;
+lower_bound = phase_shift;
+upper_bound = (phase_shift+period/2);
+
+L_p = L_p_max*sind((360/period)*(alpha-phase_shift));  <span class="codecomment">%press load vs alpha</span>
+
+<span class="codecomment">%Velocity and displacement plots</span>
+figure(1)
+fplot(v,[180 360]);
+hold <span class="codestring">on</span>
+fplot(h,[180 360]);
+legend(<span class="codestring">'velocity'</span>,<span class="codestring">'height'</span>);
+title(<span class="codestring">'Velocity and Height (above BDC) vs \alpha'</span>,<span class="codestring">'FontSize'</span>,18);
+xlabel(<span class="codestring">'\alpha (\circ)'</span>);
+ylabel(<span class="codestring">'Distance[m] / Velocity [m/s]'</span>);
+xlim([180 360]);
+ylim([0 0.085]);
+
+<span class="codecomment">%Machine load and press load plots</span>
+figure(2)
+fplot(L_p,[lower_bound upper_bound]);
+hold <span class="codestring">on</span>
+syms <span class="codestring">alpha</span>
+fplot(L_m,[180 360]);
+hold <span class="codestring">on</span>
+title(<span class="codestring">'Machine Load and Pressing Force vs \alpha'</span>,<span class="codestring">'FontSize'</span>,18);
+legend(<span class="codestring">'L_p: Pressing Force'</span>,<span class="codestring">'L_m: Machine Load'</span>);
+xlabel(<span class="codestring">'\alpha (\circ)'</span>);
+ylabel(<span class="codestring">'Force (kN)'</span>);
+xlim([180 360]);
+ylim([0 1000]);
+
+<span class="codecomment">%Torque plot</span>
+figure(3)
+fplot(M_rated,[180 360]);
+title(<span class="codestring">'Torque vs \alpha'</span>,<span class="codestring">'FontSize'</span>,18);
+xlabel(<span class="codestring">'\alpha (\circ)'</span>);
+ylabel(<span class="codestring">'Torque (kN*m)'</span>);
+</code></pre>
+<div class="row gtr-50 gtr-uniform">
+	<div class="col-6 col-12-small"><span class="image fit"><img src="images/Project_01.png" alt="" /></span></div>
+	<div class="col-6 col-12-small"><span class="image fit"><img src="images/Project_02.png" alt="" /></span></div>
+</div>
+<div class="row gtr-50 gtr-uniform">
+	<div class="col-6 col-12-small"><span class="image fit"><img src="images/Project_03.png" alt="" /></span></div>
+</div>
+
+<h4 id="4"><u>Flywheel</u></h4>
+<pre><code>gearreduc = 24;                         <span class="codecomment">%selected gear reduction</span>
+
+flyspeed = gearreduc * n;               <span class="codecomment">% flywheel shaft speed, rpm</span>
+
+Eloss = 0.1;                            <span class="codecomment">% 10 percent energy losses from flywheel to crankshaft</span>
+Euse = 0.15;                            <span class="codecomment">% Design spec: max flywheel energy used per cycle</span>
+
+Efs = Emax / (1 - Eloss);               <span class="codecomment">% energy lost per stroke at flywheel</span>
+
+Efly = Efs/Euse;                        <span class="codecomment">% min flywheel energy</span>
+
+MOI = Efly * 2000 * ( 30 / pi / flyspeed ).^2; <span class="codecomment">% flywheel moment of inertia</span></code></pre>
+
+<h5 id="5">Outputs</h5>
+<pre><code>fprintf(<span class="codestring">"Metrics: \n\n"</span>);
+fprintf(<span class="codestring">"Stroke:                        %.4f mm\n"</span>,S*1000);
+fprintf(<span class="codestring">"Connecting Rod Length:         %.1f mm\n"</span>,l*1000);
+fprintf(<span class="codestring">"Crank Shaft Speed:             %d rpm\n"</span>,n);
+fprintf(<span class="codestring">"Peak pressing force:           %.4f kN\n"</span>,L_p_max);
+fprintf(<span class="codestring">"Energy required for pressing:  %.4f kJ\n"</span>,Emax);
+fprintf(<span class="codestring">"Rated Machine Load:            %.4f kN\n"</span>,L_m_rated);
+fprintf(<span class="codestring">"Rated Torque:                  %.4f kN*m\n"</span>,M_rated);
+fprintf(<span class="codestring">"Rated Velocity:                %.4f m/s\n"</span>,v_rated);
+fprintf(<span class="codestring">"Flywheel Speed:                %d rpm\n"</span>,flyspeed);
+</code></pre>
+<pre class="codeoutput">Metrics:
+
+Stroke:                        50.0000 mm
+Connecting Rod Length:         150.0 mm
+Crank Shaft Speed:             30 rpm
+Peak pressing force:           353.8101 kN
+Energy required for pressing:  0.7208 kJ
+Rated Machine Load:            887.9213 kN
+Rated Torque:                  10.1469 kN*m
+Rated Velocity:                0.0359 m/s
+Flywheel Speed:                720 rpm
+</pre>
+
+<h4 id="6"><u>Gear Selection</u></h4>
+<pre><code>close <span class="codestring">all</span>
+clear <span class="codestring">all</span>
+clc
+
+syms <span class="codestring">dist</span>
+
+<span class="codecomment">%Gear and Bearing Force Terminology</span>
+<span class="codecomment">%P1 = pinion on flywheel shaft (shaft 1)</span>
+<span class="codecomment">%G1 = Gear connected to P1 (shaft 2)</span>
+<span class="codecomment">%P2 = Pinion connected to intermediate shaft (shaft 2)</span>
+<span class="codecomment">%P3 = Pinion connected to other side of intermediate shaft (shaft 2)</span>
+<span class="codecomment">%G2 = Gear connected to crank shaft (shaft 3)</span>
+<span class="codecomment">%G3 = Gear connected to other side of crank shaft (shaft 3)</span>
+
+<span class="codecomment">% 2 &amp; 3 numbers are the same</span>
+
+<span class="codecomment">%Pinions</span>
+Np1=24;
+Np2=24;
+
+<span class="codecomment">%Gears</span>
+Ng1=96;
+Ng2=144;
+
+<span class="codecomment">%J factors</span>
+Jp1=0.365;            <span class="codecomment">%24-96</span>
+Jg1=0.435;            <span class="codecomment">%96-24</span>
+Jp2=0.366;            <span class="codecomment">%24-144</span>
+Jg2=0.447;            <span class="codecomment">%144-24</span>
+<span class="codecomment">%extras</span>
+<span class="codecomment">% Jp=0.21;            %12-48</span>
+<span class="codecomment">% Jg=0.385;           %48-12</span>
+<span class="codecomment">% Jp=0.21;            %12-72</span>
+<span class="codecomment">% Jg=0.418;           %72-12</span>
+
+<span class="codecomment">%Shaft speeds</span>
+n_1=30*24;            <span class="codecomment">%Speed of shaft 1</span>
+n_2=30*6;             <span class="codecomment">%Speed of shaft 2</span>
+
+<span class="codecomment">%Power Transmission</span>
+H_1=42.76;               <span class="codecomment">%HP for first gear set</span>
+H_2=H_1/2;             <span class="codecomment">%HP for gear set 2 = HP for gear set 3</span>
+
+<span class="codecomment">%Other Common Variables</span>
+Pn=6;                                             <span class="codecomment">%Normal Pitch Diameter</span>
+phi_n = 20;                                       <span class="codecomment">%Normal Pressure Angle</span>
+psi = 30;                                         <span class="codecomment">%Helix Angle</span>
+phi_t = atand(tand(phi_n)/cosd(psi));             <span class="codecomment">%Tangential Pressure Angle</span>
+F=3;                                            <span class="codecomment">%Face Width</span>
+
+<span class="codecomment">%interference check</span>
+
+<span class="codecomment">%Gear Set 1</span>
+k = 1;                                   <span class="codecomment">%full depth tooth</span>
+phi_t = atand(tand(20)/cosd(30));          <span class="codecomment">%pressure angle</span>
+m = Ng1/Np1;
+N_min_set1 = 2*k*(m+sqrt(m^2+(1+2*m)*(sind(phi_t))^2))/((1+2*m)*(sind(phi_t))^2)
+min_p1_teeth = double(N_min_set1)
+
+<span class="codecomment">%Gear Set 2 &amp; 3</span>
+k = 1;                                   <span class="codecomment">%full depth tooth</span>
+phi_t = atand(tand(20)/cosd(30));          <span class="codecomment">%pressure angle</span>
+m = Ng2/Np2;
+N_min_set2 = 2*k*(m+sqrt(m^2+(1+2*m)*(sind(phi_t))^2))/((1+2*m)*(sind(phi_t))^2)
+min_p2_teeth = double(N_min_set2)
+
+<span class="codecomment">%Gear Set 1 Analysis</span>
+[bend_p1, bend_g1, cont_1, SF_p1, SF_g1, SH_p1, SH_g1, Wt1, dp1, dg1] = agma(Np1,Ng1,n_1,Pn,F,H_1,Jp1,Jg1,phi_n,psi,phi_t);
+
+bend_p1 = double(bend_p1)
+bend_g1 = double(bend_g1)
+cont_1 = double(cont_1)
+SF_p1 = double(SF_p1)
+SF_g1 = double(SF_g1)
+SH_p1 = double(SH_p1)
+SH_g1 = double(SH_g1)
+
+<span class="codecomment">%Gear Set 2 Analysis</span>
+[bend_p2, bend_g2, cont_2, SF_p2, SF_g2, SH_p2, SH_g2, Wt2, dp2, dg2] = agma(Np2,Ng2,n_2,Pn,F,H_2,Jp2,Jg2,phi_n,psi,phi_t);
+
+bend_p2 = double(bend_p2)
+bend_g2 = double(bend_g2)
+cont_2 = double(cont_2)
+SF_p2 = double(SF_p2)
+SF_g2 = double(SF_g2)
+SH_p2 = double(SH_p2)
+SH_g2 = double(SH_g2)
+
+<span class="codecomment">%Shaft 1 Analysis</span>
+Tp1_x = Wt1*dp1;                  <span class="codecomment">%chosen to be in the positive x axis (pinion rotates CCW as viewed from the right side)</span>
+Wt1
+Wr1 = Wt1*tand(phi_t)
+Wa1 = Wt1*tand(psi)
+
+<span class="codecomment">%Shaft 2 Analysis</span>
+Tg1_x = Wt1*dg1;
+Tp2_x = Tg1_x/2;
+Tp3_x = Tg1_x/2;
+Wt2_check = Tp2_x/dp2;
+Wt2
+Wr2 = Wt2*tand(phi_t)                  <span class="codecomment">%Force acts in the positive Y direction</span>
+Wa2 = Wt2*tand(psi)                    <span class="codecomment">%Force acts in the positive x direction</span>
+</code></pre>
+<h5 id="5">Outputs</h5>
+<pre class="codeoutput"> N_min_set1 =
+        12.088
+ min_p1_teeth =
+        12.088
+ N_min_set2 =
+        12.463
+ min_p2_teeth =
+        12.463
+ bend_p1 =
+         16669
+ bend_g1 =
+         13987
+ cont_1 =
+         78949
+ SF_p1 =
+        1.8522
+ SF_g1 =
+        2.2625
+ SH_p1 =
+        1.2871
+ SH_g1 =
+        1.3288
+ bend_p2 =
+         28642
+ bend_g2 =
+         23452
+ cont_2 =
+         99728
+ SF_p2 =
+        1.1049
+ SF_g2 =
+        1.3931
+ SH_p2 =
+        1.0519
+ SH_g2 =
+        1.0962
+ Wt1 =
+        1620.8
+ Wr1 =
+        681.17
+ Wa1 =
+        935.75
+ Wt2 =
+        3241.5
+ Wr2 =
+        1362.3
+ Wa2 =
+        1871.5</pre>
+
+<h4 id="7"><u>Bearing Selection</u></h4>
+<pre><code>close <span class="codestring">all</span>
+clear <span class="codestring">all</span>
+clc
+
+syms <span class="codestring">R</span> <span class="codestring">C10</span> <span class="codestring">xd</span> <span class="codestring">bearing_life</span>
+
+<span class="codecomment">%Set up table 11-2 as a vectors</span>
+FaC0_vector = [0.014;0.021;0.028;0.042;0.056;0.07;0.084;0.11;0.17;0.28;0.42;0.56];
+e_vector = [0.19;0.21;0.22;0.24;0.26;0.27;0.28;0.30;0.34;0.38;0.42;0.44];
+X1 = 1;
+Y1 = 0;
+X2 = 0.56;
+Y2_vector = [2.3;2.15;1.99;1.85;1.71;1.63;1.55;1.45;1.31;1.15;1.04;1];
+
+<span class="codecomment">%Shaft speeds</span>
+n_1=30*24;            <span class="codecomment">%Speed of shaft 1</span>
+n_2=30*6;             <span class="codecomment">%Speed of shaft 2</span>
+n_3=30;               <span class="codecomment">%Speed of shaft 3</span>
+
+<span class="codecomment">%Uncomment each block one at a time for bearing selection of each bearing</span>
+
+<span class="codecomment">% %flywheel shaft right bearing (bearing 1)     %55mm bore diameter for 1 year life</span>
+<span class="codecomment">% Fr = 6.94/2;                                  %Radial Bearing Force (kN)</span>
+<span class="codecomment">% Fa = 4.16/2;                                  %Axial Bearing Force  (kN)</span>
+<span class="codecomment">% n=n_1;</span>
+<span class="codecomment">% a=3;                                          %for ball bearing</span>
+
+<span class="codecomment">% %flywheel shaft right bearing (bearing 2)     %12mm bore diameter for 1 year life</span>
+<span class="codecomment">% Fr = 1.45;                                    %Radial Bearing Force (kN)</span>
+<span class="codecomment">% Fa = 0;                                       %Axial Bearing Force  (kN)</span>
+<span class="codecomment">% n=n_1;</span>
+<span class="codecomment">% a=3;                                          %for ball bearing</span>
+
+<span class="codecomment">% %Intermediate shaft bearing (bearing 3)       %55mm bore diameter for 1 year life</span>
+<span class="codecomment">% Fr = 18.26/2;                                 %Radial Bearing Force (kN)</span>
+<span class="codecomment">% Fa = 4.16/2;                                  %Axial Bearing Force  (kN)</span>
+<span class="codecomment">% n=n_2;</span>
+<span class="codecomment">% a=3;                                          %for ball bearing</span>
+
+<span class="codecomment">% %Intermediate shaft bearing (bearing 4)       %75 bore diameter (5 year life), 55 for 1 year life</span>
+<span class="codecomment">% Fr = 19.04/2;                                 %Radial Bearing Force (kN)</span>
+<span class="codecomment">% Fa = 0;                                       %Axial Bearing Force  (kN)</span>
+<span class="codecomment">% n=n_2;</span>
+<span class="codecomment">% a=3;                                          %for ball bearing</span>
+
+<span class="codecomment">% %Crank shaft bearings (bearings 5 &amp; 6)        %90 bore diameter for 1 year life</span>
+<span class="codecomment">% Fx=170.85;                                    %(kN)</span>
+<span class="codecomment">% Fy=31.4;                                      %(kN)</span>
+<span class="codecomment">% Fr=sqrt(Fx^2+Fy^2)/2;                         %Radial Bearing Force (kN)</span>
+<span class="codecomment">% Fa = 0;                                       %Axial Bearing Force  (kN)</span>
+<span class="codecomment">% n=n_3;</span>
+<span class="codecomment">% a=10/3;                                       %for roller bearing</span>
+
+<span class="codecomment">%Life</span>
+year_Multiplier = 1;
+yearly_cycles = 365*12*60;
+cycles = year_Multiplier*yearly_cycles*n;
+Lr=cycles;
+L10 = 10^6;
+xd = Lr/L10
+
+<span class="codecomment">%other parameters</span>
+af = 1.2;
+R = 0.99;
+v=1;
+
+<span class="codecomment">%manufacturer catalogue info</span>
+b=1.483;
+x0=0.02;
+theta=4.459;
+
+<span class="codecomment">%effective radial load guess 1</span>
+Fe_new = Fr;
+C10_new = 1;
+C10_selected = 0;
+trial_num = 0;
+<span class="codekeyword">while</span> (C10_new &gt;= C10_selected)
+    trial_num = trial_num+1;
+    Fe_guess = Fe_new
+
+    C10_initial = af*Fe_guess*(xd/(x0+(theta-x0)*((1-R)^(1/b))))^(1/a)
+
+    <span class="codecomment">%Now choose bearing from table 11-2 and fill in the following parameter</span>
+    fprintf(<span class="codestring">'Trial Number %d\n'</span>,trial_num);
+    C10_selected = input(<span class="codestring">'Enter C10: '</span>);
+    C0_selected = input(<span class="codestring">'Enter C0: '</span>);
+
+    FaC0_initial = Fa/C0_selected
+
+    <span class="codecomment">%Interpolation step</span>
+    <span class="codekeyword">if</span> (Fa ~= 0)
+        e = interp1(FaC0_vector,e_vector,FaC0_initial);
+    <span class="codekeyword">else</span>
+        e = 1;
+    <span class="codekeyword">end</span>
+
+    <span class="codekeyword">if</span> (e &gt;= (Fa/(v*Fr)))
+        X = X1
+        Y = Y1
+    <span class="codekeyword">else</span>
+        X = X2
+        Y = interp1(FaC0_vector,Y2_vector,FaC0_initial)
+    <span class="codekeyword">end</span>
+
+    <span class="codecomment">%Recalculate effective radial load</span>
+    v=1;
+
+    Fe_new = v*X*Fr + Y*Fa
+
+    C10_new = af*Fe_new*(xd/(x0+(theta-x0)*((1-R)^(1/b))))^(1/a)
+<span class="codekeyword">end</span>
+
+fprintf(<span class="codestring">"C10 of selected bearing: %f\n"</span>, C10_selected);
+fprintf(<span class="codestring">"Calculated C10: %f\n"</span>, C10_new);
+fprintf(<span class="codestring">"Done Bearing Selection! YOU DID IT! \n'Look at us, who would have thought, not me' - Paul Rudd\n"</span>);
+
+<span class="codecomment">%bearing life eqn</span>
+Lr_selected = bearing_life*n*60;
+xd_calculated = Lr_selected/L10;
+bearing_life_eqn = af*Fe_new*(xd_calculated/(x0+(theta-x0)*((1-R)^(1/b))))^(1/a) == C10_selected;
+
+bearing_life = solve(bearing_life_eqn,bearing_life);
+bearing_life_hrs = double(bearing_life)
+bearing_life_days = bearing_life_hrs/12
+bearing_life_years = bearing_life_days/365
+</code></pre>
+								<h3>MATLAB code: AGMA Function</h3>
+
+								<p>Function for calculating bending stress, contact stress, bending safety factor and contact safety factors for selected gears based on the AGMA method.</p>
+								<pre><code><span class="codekeyword">function</span> [bending_pinion, bending_gear, contact, SF_pinion, SF_gear, SH_pinion, SH_gear, Wt, dp, dg] = agma(Np,Ng,n,Pn,F,H,Jp,Jg,phi_n,psi,phi_t)
+	syms <span class="codestring">d</span>
+
+	<span class="codecomment">%Pt is transverse pitch</span>
+
+	R = 0.99;                                         <span class="codecomment">%Reliability Factor (Options: 0.9, 0.99, 0.999)</span>
+	Hb = 260;                                         <span class="codecomment">%Brinell Hardness</span>
+
+	Pt = Pn*cosd(psi);                                <span class="codecomment">%Normal Circular Pitch</span>
+	pN = (pi/Pn)*cosd(phi_n);                         <span class="codecomment">%Normal Base Pitch</span>
+
+	dp = Np/Pt;                                       <span class="codecomment">%Pitch diameter of pinion</span>
+	dg = Ng/Pt;                                       <span class="codecomment">%Pitch diameter of gear</span>
+	rp = dp/2;
+	rg = dg/2;
+	rbp = rp*cosd(phi_t);
+	rbg = rg*cosd(phi_t);
+	V = (pi*dp*n)/12;                                 <span class="codecomment">%Pitchline Velocity</span>
+	Wt = 33000*H/V;                                   <span class="codecomment">%Tangetial force</span>
+	Qv = 6;                                           <span class="codecomment">%Quality Number (Commercial Range)</span>
+	ht=10;                                            <span class="codecomment">%Tooth Height</span>
+	tr=13;                                            <span class="codecomment">%Rim Thickness</span>
+	adden = 1/Pn;                                     <span class="codecomment">%Addendum</span>
+
+	<span class="codecomment">%Overload Factor</span>
+	<span class="codecomment">%Ko = 1;                                          %Uniform Power &amp; Load</span>
+	Ko = 1.25;                                        <span class="codecomment">%Smooth Power, Medium Shock Load</span>
+
+	<span class="codecomment">%Dynamic Factor</span>
+	B = 0.25*(12-Qv)^(2/3);
+	A = 50 + 56*(1-B);
+	Kv = ((A+sqrt(V))/A)^B;
+
+	<span class="codecomment">%Size Factor</span>
+	Ks = 1;                                           <span class="codecomment">%Based on lecture note</span>
+
+	<span class="codecomment">%Load Distribution Factor</span>
+	Cmc = 1;                                          <span class="codecomment">%Uncrowned Teeth</span>
+	<span class="codecomment">%Cmc = 0.8;                                       %Crowned Teeth</span>
+
+	<span class="codecomment">% note appropriate diameter needed here</span>
+	Cpf_temp = F/(10*dp);
+	<span class="codekeyword">if</span> ((Cpf_temp)&lt;0.05)
+	Cpf_temp = 0.05;
+	<span class="codekeyword">end</span>
+	<span class="codekeyword">if</span> (F&lt;=1)
+	Cpf = Cpf_temp - 0.025;
+	<span class="codekeyword">elseif</span> (F&gt;1 &amp;&amp; F&lt;=17)
+	Cpf = Cpf_temp - 0.0375 + 0.0125*F;
+	<span class="codekeyword">else</span>
+	Cpf = Cpf_temp - 0.1109 + 0.0207*F - 0.000228*F^2;
+	<span class="codekeyword">end</span>
+
+	Cpm = 1.1;                                          <span class="codecomment">%straddle mounted with S1/S &gt; 0.175</span>
+	<span class="codecomment">%Cpm = 1;                                           %straddle mounted with S1/S &lt; 0.175</span>
+
+	<span class="codecomment">% Assume - Commercial, Enclosed Gearing, Then:</span>
+	A_km = 0.127;
+	B_km = 0.0158;
+	C_km = -0.930*10^-4;
+
+	Cma = A_km + B_km*F + C_km*F^2;
+
+	Ce = 1;
+
+	Km = 1 + Cmc*(Cpf*Cpm + Cma*Ce);
+
+	<span class="codecomment">%Rim Thickness Factor</span>
+	mb = tr/ht;
+	<span class="codekeyword">if</span> (mb&lt;1.2)
+			Kb = 1.6*log(2.242/mb);
+	<span class="codekeyword">else</span>
+			Kb = 1;
+	<span class="codekeyword">end</span>
+
+	<span class="codecomment">%Elastic Coefficient [lbf/in^2]</span>
+	Cp = 2300;                                        <span class="codecomment">%For Steel/Steel</span>
+	<span class="codecomment">%Cp = 1960;                                       %For Cast Iron/Cast Iron</span>
+
+	<span class="codecomment">%Surface Condition Factor</span>
+	Cf = 1;
+
+	<span class="codecomment">%Bending Strength Geometry Factor</span>
+	Z = sqrt((rp+adden)^2 - rbp^2) + sqrt((rg+adden)^2 - rbg^2) - (rp+rg)*sind(phi_t);
+	mN = pN/(0.95*Z);
+	mG = Ng/Np;
+
+	<span class="codecomment">%Jp = Yp/(Kf*mN);                                       %find from Table 14.2</span>
+	<span class="codecomment">%Jg = Yg/(Kf*mN);</span>
+
+	I = ((cosd(phi_t)*sind(phi_t))/(2*mN))*(mG/(mG+1));
+
+	<span class="codecomment">%STRESS EQUATIONS</span>
+	bending_pinion = Wt*Ko*Kv*Ks*(Pt/F)*(Km*Kb/Jp);
+	bending_gear = bending_pinion*Jp/Jg;
+	contact = Cp*sqrt(Wt*Ko*Kv*Ks*Km*Cf/(dp*F*I));
+
+	<span class="codecomment">%Temperature Factor</span>
+	Kt = 1;                                              <span class="codecomment">%Temperature &lt; 120C</span>
+
+	<span class="codecomment">%Reliability Factor</span>
+	<span class="codekeyword">if</span> (R == 0.9)
+			Kr = 0.85;
+	<span class="codekeyword">elseif</span> (R == 0.99)
+			Kr = 1;
+	<span class="codekeyword">elseif</span> (R == 0.999)
+			Kr = 1.25;
+	<span class="codekeyword">end</span>
+
+	<span class="codecomment">%Life (CHANGE THIS)</span>
+	year_Multiplier = 5;
+	yearly_cycles = 365*12*60;
+	cycles = year_Multiplier*yearly_cycles*n*(dp/d);
+
+	<span class="codecomment">%Stress Cycle Factors</span>
+	Yn(d) = 1.3558*cycles^(-0.0178);
+	Zn(d) = 1.4488*cycles^(-0.023);
+
+
+	<span class="codecomment">%Bending Strength</span>
+	St = 77.3*Hb + 12800;                                   <span class="codecomment">%Assume Grade 1</span>
+
+	<span class="codecomment">%Contact Strength</span>
+	Sc = 322*Hb + 29100;
+
+	<span class="codecomment">%Hardness Ratio Factor</span>
+	Ch = 1;                                                 <span class="codecomment">%Same hardness for pinion and gear</span>
+
+	<span class="codecomment">%Safety Factors</span>
+	SF(d) = St*Yn(d)/(Kt*Kr);
+	SF_pinion = SF(dp)/bending_pinion;
+	SF_gear = SF(dg)/bending_gear;
+
+	SH(d) = Sc*Ch*Zn(d)/(Kt*Kr*contact);
+	SH_pinion = SH(dp);
+	SH_gear = SH(dg);
+<span class="codekeyword">end</span></code></pre>
+							</section>
+					</div>
+
+				<!-- Footer -->
+					<footer id="footer">
+						<section class="split contact">
+							<section class="alt">
+								<h3>Location</h3>
+								<p>Mississauga, Ontario<br />
+								Canada</p>
+							</section>
+							<section>
+								<h3>Phone</h3>
+								<p><a href="#!" title="click to copy phone number" address="+16473093852" class="copyToClipboard">+1 (647) 309-3582</a></p>
+							</section>
+							<section>
+								<h3>Email</h3>
+								<p><a href="#!" title="click to copy email" address="saksham.malhotra98@gmail.com" class="copyToClipboard">saksham.malhotra98@gmail.com</a></p>
+							</section>
+							<section>
+								<h3>LinkedIn</h3>
+								<ul class="icons alt">
+									<li><a href="https://www.linkedin.com/in/saksham98/" class="icon brands alt fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+								</ul>
+							</section>
+						</section>
+					</footer>
+
+				<!-- Copyright -->
+					<div id="copyright">
+						<ul><li>&copy; Saksham Malhotra</li><li>2021</a></li></ul>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
